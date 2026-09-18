@@ -8,38 +8,98 @@ let cachedClient: SupabaseClient | null = null;
 let currentConfigHash = '';
 
 /**
- * Retrieves the Supabase configuration from environment variables (Vite)
- * or falls back to localStorage.
+ * Robustly sanitizes a Supabase URL:
+ * - Trims whitespace
+ * - Strips surrounding single or double quotes
+ * - Removes accidental /rest/v1 or /auth/v1 endpoints
+ * - Removes trailing slashes
+ * - Resolves to origin (https://[project-ref].supabase.co)
  */
-export function getSupabaseConfig(): SupabaseConfig | null {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL;
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export function sanitizeSupabaseUrl(rawUrl: string | undefined | null): string {
+  if (!rawUrl) return '';
+  let url = rawUrl.trim().replace(/^["']|["']$/g, '').trim();
 
-  if (envUrl && envKey && envUrl.startsWith('http')) {
-    return {
-      url: envUrl.trim(),
-      anonKey: envKey.trim(),
-    };
+  try {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    const parsed = new URL(url);
+    if (parsed.hostname.endsWith('supabase.co')) {
+      return parsed.origin;
+    }
+    let pathname = parsed.pathname
+      .replace(/\/rest\/v1\/?$/i, '')
+      .replace(/\/auth\/v1\/?$/i, '')
+      .replace(/\/+$/, '');
+    return `${parsed.origin}${pathname}`;
+  } catch {
+    return url
+      .replace(/\/rest\/v1\/?$/i, '')
+      .replace(/\/auth\/v1\/?$/i, '')
+      .replace(/\/+$/, '');
   }
+}
 
-  // Fallback to localStorage (useful for local dev or manual setup before GitHub Secrets)
+/**
+ * Robustly sanitizes an anon key (trims whitespace, removes quotes)
+ */
+export function sanitizeSupabaseKey(rawKey: string | undefined | null): string {
+  if (!rawKey) return '';
+  return rawKey.trim().replace(/^["']|["']$/g, '').trim();
+}
+
+export interface ConfigSourceInfo {
+  config: SupabaseConfig | null;
+  source: 'env' | 'localStorage' | 'none';
+}
+
+/**
+ * Retrieves the Supabase configuration from localStorage (override)
+ * or Vite environment variables, with full URL sanitization.
+ */
+export function getSupabaseConfigWithSource(): ConfigSourceInfo {
+  // Check localStorage first so users can override or fix configuration live in browser
   if (typeof window !== 'undefined') {
     const localUrl = localStorage.getItem(SUPABASE_URL_STORAGE_KEY);
     const localKey = localStorage.getItem(SUPABASE_ANON_KEY_STORAGE_KEY);
-    if (localUrl && localKey && localUrl.startsWith('http')) {
+    if (localUrl && localKey) {
+      const cleanUrl = sanitizeSupabaseUrl(localUrl);
+      const cleanKey = sanitizeSupabaseKey(localKey);
+      if (cleanUrl.startsWith('http') && cleanKey) {
+        return {
+          config: { url: cleanUrl, anonKey: cleanKey },
+          source: 'localStorage',
+        };
+      }
+    }
+  }
+
+  // Fallback to Vite environment variables from build/actions secrets
+  const envUrl = import.meta.env.VITE_SUPABASE_URL;
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (envUrl && envKey) {
+    const cleanUrl = sanitizeSupabaseUrl(envUrl);
+    const cleanKey = sanitizeSupabaseKey(envKey);
+    if (cleanUrl.startsWith('http') && cleanKey) {
       return {
-        url: localUrl.trim(),
-        anonKey: localKey.trim(),
+        config: { url: cleanUrl, anonKey: cleanKey },
+        source: 'env',
       };
     }
   }
 
-  return null;
+  return { config: null, source: 'none' };
+}
+
+export function getSupabaseConfig(): SupabaseConfig | null {
+  return getSupabaseConfigWithSource().config;
 }
 
 export function saveLocalSupabaseConfig(url: string, anonKey: string): void {
-  localStorage.setItem(SUPABASE_URL_STORAGE_KEY, url.trim());
-  localStorage.setItem(SUPABASE_ANON_KEY_STORAGE_KEY, anonKey.trim());
+  const cleanUrl = sanitizeSupabaseUrl(url);
+  const cleanKey = sanitizeSupabaseKey(anonKey);
+  localStorage.setItem(SUPABASE_URL_STORAGE_KEY, cleanUrl);
+  localStorage.setItem(SUPABASE_ANON_KEY_STORAGE_KEY, cleanKey);
   cachedClient = null; // reset client
 }
 
@@ -64,7 +124,12 @@ export function getSupabase(): SupabaseClient | null {
   }
 
   try {
-    cachedClient = createClient(config.url, config.anonKey);
+    cachedClient = createClient(config.url, config.anonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
     currentConfigHash = hash;
     return cachedClient;
   } catch (err) {

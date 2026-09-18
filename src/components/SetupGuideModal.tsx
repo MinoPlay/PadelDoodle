@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, ExternalLink, Key, Save, Trash2, CheckCircle2 } from 'lucide-react';
-import { SUPABASE_SQL_SCHEMA, getSupabaseConfig, saveLocalSupabaseConfig, clearLocalSupabaseConfig } from '../lib/supabase';
+import { X, Copy, Check, ExternalLink, Key, Save, Trash2, CheckCircle2, AlertTriangle, Play } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+import {
+  SUPABASE_SQL_SCHEMA,
+  getSupabaseConfigWithSource,
+  saveLocalSupabaseConfig,
+  clearLocalSupabaseConfig,
+  sanitizeSupabaseUrl,
+  sanitizeSupabaseKey,
+} from '../lib/supabase';
 
 interface SetupGuideModalProps {
   isOpen: boolean;
@@ -13,12 +21,14 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
   onClose,
   onConfigUpdated,
 }) => {
-  const currentConfig = getSupabaseConfig();
+  const { config: currentConfig, source } = getSupabaseConfigWithSource();
   const [url, setUrl] = useState(currentConfig?.url || '');
   const [anonKey, setAnonKey] = useState(currentConfig?.anonKey || '');
   const [copiedSql, setCopiedSql] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<'guide' | 'test'>('guide');
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   if (!isOpen) return null;
 
@@ -28,10 +38,47 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
     setTimeout(() => setCopiedSql(false), 2000);
   };
 
+  const handleTestConnection = async () => {
+    const cleanUrl = sanitizeSupabaseUrl(url);
+    const cleanKey = sanitizeSupabaseKey(anonKey);
+
+    if (!cleanUrl || !cleanKey) {
+      setTestResult({ success: false, message: 'Please enter both Supabase URL and Anon Key to test.' });
+      return;
+    }
+
+    setIsTesting(true);
+    setTestResult(null);
+
+    try {
+      const client = createClient(cleanUrl, cleanKey, {
+        auth: { persistSession: false },
+      });
+      const { error } = await client.from('participants').select('id').limit(1);
+
+      if (error) {
+        setTestResult({ success: false, message: error.message });
+      } else {
+        setTestResult({
+          success: true,
+          message: 'Connected successfully! The "participants" table is responding properly.',
+        });
+      }
+    } catch (err: any) {
+      setTestResult({ success: false, message: err.message || 'Connection failed' });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   const handleSaveLocal = (e: React.FormEvent) => {
     e.preventDefault();
     if (url && anonKey) {
-      saveLocalSupabaseConfig(url, anonKey);
+      const cleanUrl = sanitizeSupabaseUrl(url);
+      const cleanKey = sanitizeSupabaseKey(anonKey);
+      setUrl(cleanUrl);
+      setAnonKey(cleanKey);
+      saveLocalSupabaseConfig(cleanUrl, cleanKey);
       setSaveSuccess(true);
       onConfigUpdated();
       setTimeout(() => setSaveSuccess(false), 2000);
@@ -40,12 +87,12 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
 
   const handleClearLocal = () => {
     clearLocalSupabaseConfig();
-    setUrl('');
-    setAnonKey('');
+    const refreshed = getSupabaseConfigWithSource();
+    setUrl(refreshed.config?.url || '');
+    setAnonKey(refreshed.config?.anonKey || '');
+    setTestResult(null);
     onConfigUpdated();
   };
-
-  const isEnvConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -166,6 +213,25 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
                     <strong>anon / public key:</strong> the safe public client key (e.g. <code>eyJhbGciOi...</code>)
                   </li>
                 </ul>
+
+                {/* Important Callout regarding Invalid path specified in request URL */}
+                <div className="ml-8 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+                  <div className="flex items-center space-x-1.5 font-bold text-amber-800">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Avoid "Invalid path specified in request URL":</span>
+                  </div>
+                  <p className="text-amber-800">
+                    Make sure the URL is <strong>only</strong> the root domain: <code>https://your-ref.supabase.co</code>.
+                  </p>
+                  <ul className="list-disc pl-4 text-amber-700 space-y-0.5">
+                    <li>❌ Do <strong>NOT</strong> copy the REST URL (<code>.../rest/v1</code>).</li>
+                    <li>❌ Do <strong>NOT</strong> include a trailing slash (<code>https://your-ref.supabase.co/</code>).</li>
+                    <li>❌ Do <strong>NOT</strong> wrap the value in quotes.</li>
+                  </ul>
+                  <p className="text-[11px] text-amber-600 italic">
+                    (Our client now auto-cleans and sanitizes these formats automatically, but your GitHub Secret should ideally match the root URL).
+                  </p>
+                </div>
               </div>
 
               {/* Step 4: GitHub Actions & Secrets */}
@@ -182,9 +248,15 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
                 <ol className="text-xs text-slate-600 pl-12 list-decimal space-y-1">
                   <li>Go to <strong>Settings</strong> &rarr; <strong>Secrets and variables</strong> &rarr; <strong>Actions</strong>.</li>
                   <li>Click <strong>New repository secret</strong> and add:
-                    <div className="my-1.5 p-2 bg-slate-100 rounded-lg font-mono text-[11px] space-y-1">
-                      <div>Name: <strong className="text-emerald-700">VITE_SUPABASE_URL</strong> &nbsp;|&nbsp; Value: your project URL</div>
-                      <div>Name: <strong className="text-emerald-700">VITE_SUPABASE_ANON_KEY</strong> &nbsp;|&nbsp; Value: your anon public key</div>
+                    <div className="my-1.5 p-2.5 bg-slate-100 rounded-lg font-mono text-[11px] space-y-1.5">
+                      <div>
+                        Name: <strong className="text-emerald-700">VITE_SUPABASE_URL</strong><br />
+                        Value: <code>https://your-project-id.supabase.co</code> <span className="text-slate-400">(no /rest/v1, no trailing slash)</span>
+                      </div>
+                      <div>
+                        Name: <strong className="text-emerald-700">VITE_SUPABASE_ANON_KEY</strong><br />
+                        Value: <code>eyJhbGciOi...</code> <span className="text-slate-400">(your anon public key)</span>
+                      </div>
                     </div>
                   </li>
                   <li>
@@ -199,17 +271,24 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
           ) : (
             <div className="space-y-4">
               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-900">
-                <p className="font-semibold mb-1">Instant Browser Preview</p>
+                <p className="font-semibold mb-1">Live Browser Configuration &amp; Diagnostics</p>
                 <p>
-                  You can paste your Supabase URL and Anon Public Key right here to test your doodle poll immediately without waiting for GitHub deployment!
-                  Values are stored only in your local browser storage.
+                  You can paste your Supabase URL and Anon Key right here to test or override settings in real time.
+                  Any trailing slash or <code>/rest/v1</code> will be automatically stripped.
                 </p>
               </div>
 
-              {isEnvConfigured && (
+              {source === 'env' && (
                 <div className="p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl text-xs flex items-center space-x-2">
                   <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600" />
-                  <span>Vite environment variables are active in this build.</span>
+                  <span>Using credentials baked into GitHub Actions build (<code>VITE_SUPABASE_URL</code>).</span>
+                </div>
+              )}
+
+              {source === 'localStorage' && (
+                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs flex items-center space-x-2">
+                  <Key className="w-4 h-4 shrink-0 text-amber-600" />
+                  <span>Using browser local storage override. Click "Clear Local Keys" to revert to GitHub build secrets.</span>
                 </div>
               )}
 
@@ -219,13 +298,16 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
                     Supabase Project URL
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     required
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://xyzabcdefg.supabase.co"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white"
                   />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Must be root domain only (e.g. <code>https://xyz.supabase.co</code>). Do not include <code>/rest/v1</code>.
+                  </p>
                 </div>
 
                 <div>
@@ -242,22 +324,53 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <button
-                    type="button"
-                    onClick={handleClearLocal}
-                    className="inline-flex items-center space-x-1.5 text-xs text-red-600 hover:text-red-800 transition font-medium"
+                {testResult && (
+                  <div
+                    className={`p-3 rounded-xl border text-xs flex items-start space-x-2 ${
+                      testResult.success
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                        : 'bg-red-50 border-red-200 text-red-800'
+                    }`}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Clear Local Keys</span>
-                  </button>
+                    {testResult.success ? (
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                    )}
+                    <div>
+                      <p className="font-bold">{testResult.success ? 'Connection Success' : 'Connection Failed'}</p>
+                      <p className="text-[11px] mt-0.5">{testResult.message}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={handleClearLocal}
+                      className="inline-flex items-center space-x-1.5 text-xs text-red-600 hover:text-red-800 transition font-medium px-2 py-1.5 rounded-lg hover:bg-red-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Clear Local Keys</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleTestConnection}
+                      disabled={isTesting}
+                      className="inline-flex items-center space-x-1.5 text-xs text-slate-700 hover:text-slate-900 border border-slate-300 bg-white hover:bg-slate-50 transition font-medium px-3 py-1.5 rounded-lg shadow-xs disabled:opacity-50"
+                    >
+                      <Play className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{isTesting ? 'Testing...' : 'Test Connection'}</span>
+                    </button>
+                  </div>
 
                   <button
                     type="submit"
                     className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm"
                   >
                     <Save className="w-3.5 h-3.5" />
-                    <span>{saveSuccess ? 'Saved!' : 'Save & Test Connection'}</span>
+                    <span>{saveSuccess ? 'Saved!' : 'Save Credentials'}</span>
                   </button>
                 </div>
               </form>
@@ -268,7 +381,7 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
         {/* Modal Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
           <span className="text-xs text-slate-500">
-            PadelDoodle &bull; 100% Client-Side & Serverless
+            PadelDoodle &bull; 100% Client-Side &amp; Serverless
           </span>
           <button
             onClick={onClose}

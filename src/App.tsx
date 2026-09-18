@@ -225,17 +225,33 @@ export const App: React.FC = () => {
 
         {/* Database Error Banner */}
         {error && (
-          <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-              <span>{error}</span>
+          <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-start space-x-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">{error}</p>
+                {error.includes('Invalid path specified') && (
+                  <p className="text-red-700 mt-1">
+                    💡 <strong>Diagnosis:</strong> This occurs when the Supabase URL includes <code>/rest/v1</code> or a trailing slash <code>/</code>.
+                    Your GitHub Secret <code>VITE_SUPABASE_URL</code> should be just <code>https://&lt;project-ref&gt;.supabase.co</code>.
+                  </p>
+                )}
+              </div>
             </div>
-            <button
-              onClick={loadParticipants}
-              className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg font-semibold transition"
-            >
-              Retry
-            </button>
+            <div className="flex items-center space-x-2 shrink-0">
+              <button
+                onClick={() => setIsSetupOpen(true)}
+                className="px-2.5 py-1 bg-white border border-red-200 text-red-800 hover:bg-red-50 rounded-lg font-semibold transition"
+              >
+                Fix in Setup
+              </button>
+              <button
+                onClick={loadParticipants}
+                className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition"
+              >
+                Retry
+              </button>
+            </div>
           </div>
         )}
 
