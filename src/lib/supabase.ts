@@ -51,14 +51,55 @@ export function sanitizeSupabaseKey(rawKey: string | undefined | null): string {
 export interface ConfigSourceInfo {
   config: SupabaseConfig | null;
   source: 'env' | 'localStorage' | 'none';
+  hasEnv: boolean;
+}
+
+/**
+ * Safely masks a Supabase URL to obscure the project ref from public view
+ * e.g. https://abcdefghijklm.supabase.co -> https://••••••••.supabase.co
+ */
+export function maskSupabaseUrl(rawUrl: string | undefined | null): string {
+  if (!rawUrl) return '';
+  const clean = sanitizeSupabaseUrl(rawUrl);
+  try {
+    const parsed = new URL(clean);
+    if (parsed.hostname.endsWith('supabase.co')) {
+      return 'https://••••••••.supabase.co';
+    }
+    return `${parsed.protocol}//••••••••${parsed.port ? `:${parsed.port}` : ''}`;
+  } catch {
+    return 'https://••••••••.supabase.co';
+  }
+}
+
+/**
+ * Safely masks an API key or PAT for display
+ */
+export function maskSupabaseKey(rawKey: string | undefined | null): string {
+  if (!rawKey) return '';
+  return '••••••••••••••••••••••••••••••••';
+}
+
+/**
+ * Checks if a key looks like a Supabase Personal Access Token (starts with sbp_)
+ */
+export function isLikelyPAT(rawKey: string | undefined | null): boolean {
+  if (!rawKey) return false;
+  return rawKey.trim().startsWith('sbp_');
 }
 
 /**
  * Retrieves the Supabase configuration from localStorage (override)
- * or Vite environment variables, with full URL sanitization.
+ * or Vite environment variables, with full URL sanitization and source detection.
  */
 export function getSupabaseConfigWithSource(): ConfigSourceInfo {
-  // Check localStorage first so users can override or fix configuration live in browser
+  const envUrl = import.meta.env.VITE_SUPABASE_URL;
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const cleanEnvUrl = sanitizeSupabaseUrl(envUrl);
+  const cleanEnvKey = sanitizeSupabaseKey(envKey);
+  const hasEnv = Boolean(cleanEnvUrl.startsWith('http') && cleanEnvKey);
+
+  // Check localStorage first so users can override configuration live in browser if desired
   if (typeof window !== 'undefined') {
     const localUrl = localStorage.getItem(SUPABASE_URL_STORAGE_KEY);
     const localKey = localStorage.getItem(SUPABASE_ANON_KEY_STORAGE_KEY);
@@ -69,26 +110,22 @@ export function getSupabaseConfigWithSource(): ConfigSourceInfo {
         return {
           config: { url: cleanUrl, anonKey: cleanKey },
           source: 'localStorage',
+          hasEnv,
         };
       }
     }
   }
 
   // Fallback to Vite environment variables from build/actions secrets
-  const envUrl = import.meta.env.VITE_SUPABASE_URL;
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  if (envUrl && envKey) {
-    const cleanUrl = sanitizeSupabaseUrl(envUrl);
-    const cleanKey = sanitizeSupabaseKey(envKey);
-    if (cleanUrl.startsWith('http') && cleanKey) {
-      return {
-        config: { url: cleanUrl, anonKey: cleanKey },
-        source: 'env',
-      };
-    }
+  if (hasEnv) {
+    return {
+      config: { url: cleanEnvUrl, anonKey: cleanEnvKey },
+      source: 'env',
+      hasEnv: true,
+    };
   }
 
-  return { config: null, source: 'none' };
+  return { config: null, source: 'none', hasEnv: false };
 }
 
 export function getSupabaseConfig(): SupabaseConfig | null {

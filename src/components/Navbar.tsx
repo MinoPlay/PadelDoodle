@@ -61,29 +61,32 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Database connection badge */}
-          <button
-            onClick={onOpenSetup}
-            className={`inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition border ${
-              isConnected
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100 animate-pulse'
-            }`}
-            title="Click to view Supabase & GitHub setup guidelines"
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isConnected ? 'bg-emerald-500 ring-2 ring-emerald-300' : 'bg-amber-500 ring-2 ring-amber-300'
-              }`}
-            />
-            <Database className="w-3.5 h-3.5 hidden sm:inline" />
-            <span>{isConnected ? 'Supabase Connected' : 'Setup Required'}</span>
-          </button>
+          {isConnected ? (
+            <div
+              className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200 select-none"
+              title="Database connected and live syncing"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-300" />
+              <Database className="w-3.5 h-3.5 hidden sm:inline" />
+              <span>Connected</span>
+            </div>
+          ) : (
+            <button
+              onClick={onOpenSetup}
+              className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition border bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100 animate-pulse"
+              title="Click to configure Supabase connection"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-500 ring-2 ring-amber-300" />
+              <Database className="w-3.5 h-3.5 hidden sm:inline" />
+              <span>Setup Required</span>
+            </button>
+          )}
 
           {/* Setup / Settings button */}
           <button
             onClick={onOpenSetup}
-            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
-            title="Setup instructions and configuration"
+            className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
+            title="Connection status and security"
           >
             <Settings className="w-5 h-5" />
           </button>

@@ -1,5 +1,22 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, ExternalLink, Key, Save, Trash2, CheckCircle2, AlertTriangle, Play } from 'lucide-react';
+import {
+  X,
+  Copy,
+  Check,
+  ExternalLink,
+  Key,
+  Save,
+  Trash2,
+  CheckCircle2,
+  AlertTriangle,
+  Play,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  Lock,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import {
   SUPABASE_SQL_SCHEMA,
@@ -8,6 +25,9 @@ import {
   clearLocalSupabaseConfig,
   sanitizeSupabaseUrl,
   sanitizeSupabaseKey,
+  maskSupabaseUrl,
+  maskSupabaseKey,
+  isLikelyPAT,
 } from '../lib/supabase';
 
 interface SetupGuideModalProps {
@@ -21,12 +41,17 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
   onClose,
   onConfigUpdated,
 }) => {
-  const { config: currentConfig, source } = getSupabaseConfigWithSource();
-  const [url, setUrl] = useState(currentConfig?.url || '');
-  const [anonKey, setAnonKey] = useState(currentConfig?.anonKey || '');
+  const { config: currentConfig, source, hasEnv } = getSupabaseConfigWithSource();
+
+  // For localStorage or manual testing override only - never prefilled from env secrets!
+  const [overrideUrl, setOverrideUrl] = useState(source === 'localStorage' ? currentConfig?.url || '' : '');
+  const [overrideKey, setOverrideKey] = useState(source === 'localStorage' ? currentConfig?.anonKey || '' : '');
+  const [showOverrideSection, setShowOverrideSection] = useState(source !== 'env');
+  const [showOverrideKey, setShowOverrideKey] = useState(false);
+
   const [copiedSql, setCopiedSql] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [activeTab, setActiveTab] = useState<'guide' | 'test'>('guide');
+  const [activeTab, setActiveTab] = useState<'status' | 'guide'>('status');
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -39,11 +64,23 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
   };
 
   const handleTestConnection = async () => {
-    const cleanUrl = sanitizeSupabaseUrl(url);
-    const cleanKey = sanitizeSupabaseKey(anonKey);
+    let testUrl = '';
+    let testKey = '';
 
-    if (!cleanUrl || !cleanKey) {
-      setTestResult({ success: false, message: 'Please enter both Supabase URL and Anon Key to test.' });
+    // If using environment secrets and not overriding, test in-memory config directly
+    if (source === 'env' && !showOverrideSection) {
+      testUrl = currentConfig?.url || '';
+      testKey = currentConfig?.anonKey || '';
+    } else {
+      testUrl = sanitizeSupabaseUrl(overrideUrl);
+      testKey = sanitizeSupabaseKey(overrideKey);
+    }
+
+    if (!testUrl || !testKey) {
+      setTestResult({
+        success: false,
+        message: 'Please provide both Supabase URL and Key to test.',
+      });
       return;
     }
 
@@ -51,7 +88,7 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
     setTestResult(null);
 
     try {
-      const client = createClient(cleanUrl, cleanKey, {
+      const client = createClient(testUrl, testKey, {
         auth: { persistSession: false },
       });
       const { error } = await client.from('participants').select('id').limit(1);
@@ -61,7 +98,7 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
       } else {
         setTestResult({
           success: true,
-          message: 'Connected successfully! The "participants" table is responding properly.',
+          message: 'Connected successfully! The "participants" table responded properly.',
         });
       }
     } catch (err: any) {
@@ -71,13 +108,13 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
     }
   };
 
-  const handleSaveLocal = (e: React.FormEvent) => {
+  const handleSaveOverride = (e: React.FormEvent) => {
     e.preventDefault();
-    if (url && anonKey) {
-      const cleanUrl = sanitizeSupabaseUrl(url);
-      const cleanKey = sanitizeSupabaseKey(anonKey);
-      setUrl(cleanUrl);
-      setAnonKey(cleanKey);
+    if (overrideUrl && overrideKey) {
+      const cleanUrl = sanitizeSupabaseUrl(overrideUrl);
+      const cleanKey = sanitizeSupabaseKey(overrideKey);
+      setOverrideUrl(cleanUrl);
+      setOverrideKey(cleanKey);
       saveLocalSupabaseConfig(cleanUrl, cleanKey);
       setSaveSuccess(true);
       onConfigUpdated();
@@ -88,11 +125,16 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
   const handleClearLocal = () => {
     clearLocalSupabaseConfig();
     const refreshed = getSupabaseConfigWithSource();
-    setUrl(refreshed.config?.url || '');
-    setAnonKey(refreshed.config?.anonKey || '');
+    setOverrideUrl('');
+    setOverrideKey('');
+    setShowOverrideSection(refreshed.source !== 'env');
     setTestResult(null);
     onConfigUpdated();
   };
+
+  const patDetected =
+    Boolean(currentConfig?.anonKey && isLikelyPAT(currentConfig.anonKey)) ||
+    Boolean(overrideKey && isLikelyPAT(overrideKey));
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -101,16 +143,17 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
         <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-xl bg-emerald-500 text-slate-950 font-black flex items-center justify-center">
-              ⚡
+              🎾
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold">Supabase & GitHub Pages Setup Guide</h2>
-              <p className="text-xs text-slate-400">Everything is 100% free with no credit card required</p>
+              <h2 className="text-base sm:text-lg font-bold">Supabase Connection &amp; Security</h2>
+              <p className="text-xs text-slate-400">Database status, client security, and configuration</p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"
+            title="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
@@ -119,6 +162,17 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
         {/* Tab switcher */}
         <div className="flex border-b border-slate-200 bg-slate-50 px-6 shrink-0 text-xs font-semibold">
           <button
+            onClick={() => setActiveTab('status')}
+            className={`py-3 px-4 border-b-2 transition flex items-center space-x-1.5 ${
+              activeTab === 'status'
+                ? 'border-emerald-600 text-emerald-700 bg-white'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Connection &amp; Security</span>
+          </button>
+          <button
             onClick={() => setActiveTab('guide')}
             className={`py-3 px-4 border-b-2 transition ${
               activeTab === 'guide'
@@ -126,25 +180,280 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
-            Setup Guidelines & SQL
-          </button>
-          <button
-            onClick={() => setActiveTab('test')}
-            className={`py-3 px-4 border-b-2 transition flex items-center space-x-1.5 ${
-              activeTab === 'test'
-                ? 'border-emerald-600 text-emerald-700 bg-white'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Key className="w-3.5 h-3.5" />
-            <span>Browser Keys / Instant Preview</span>
+            Setup Guide &amp; SQL Schema
           </button>
         </div>
 
         {/* Modal Content */}
         <div className="p-6 overflow-y-auto space-y-6 text-sm text-slate-700">
-          {activeTab === 'guide' ? (
-            <>
+          {activeTab === 'status' ? (
+            <div className="space-y-5">
+              {/* PAT Warning Banner if a Personal Access Token was used */}
+              {patDetected && (
+                <div className="p-4 rounded-2xl bg-red-50 border border-red-300 text-red-900 space-y-2">
+                  <div className="flex items-center space-x-2 font-bold text-red-800">
+                    <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
+                    <span>Supabase Personal Access Token (PAT) Detected</span>
+                  </div>
+                  <p className="text-xs text-red-800 leading-relaxed">
+                    The configured key starts with <code>sbp_</code>, which indicates a <strong>Personal Access Token (PAT)</strong>.
+                    PATs grant root administrative control over your entire Supabase account (including creating and deleting databases).
+                  </p>
+                  <p className="text-xs text-red-700 font-medium">
+                    👉 <strong>Recommended Action:</strong> In your GitHub Repository Secrets, replace <code>VITE_SUPABASE_ANON_KEY</code> with
+                    the safe <strong>anon public key</strong> found under <em>Project Settings &rarr; API &rarr; Project API keys &rarr; anon public</em>.
+                  </p>
+                </div>
+              )}
+
+              {/* View 1: Using Production Environment Secrets (GitHub Actions / Build) */}
+              {source === 'env' && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-950 space-y-2">
+                    <div className="flex items-center space-x-2 font-bold text-emerald-900 text-xs uppercase tracking-wider">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>Protected Environment Secrets</span>
+                    </div>
+                    <p className="text-xs text-emerald-800">
+                      This application is securely connected via <strong>GitHub Actions Secrets</strong>.
+                      Database URL and credentials are automatically masked to prevent outside visitors from viewing or extracting them.
+                    </p>
+                  </div>
+
+                  {/* Masked Credentials Summary */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5">
+                      <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Connection Status
+                      </span>
+                      <span className="inline-flex items-center space-x-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Active &amp; Synced</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5">
+                      <span className="text-xs font-medium text-slate-600">Supabase Project URL</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono text-xs text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 select-all">
+                          {maskSupabaseUrl(currentConfig?.url)}
+                        </span>
+                        <span className="inline-flex items-center space-x-1 text-[11px] font-semibold text-slate-500 bg-slate-200 px-2 py-0.5 rounded-md">
+                          <Lock className="w-3 h-3" />
+                          <span>Masked</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5">
+                      <span className="text-xs font-medium text-slate-600">Anon Public Key / PAT</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono text-xs text-slate-500 bg-white px-2.5 py-1 rounded-lg border border-slate-200 tracking-widest select-none">
+                          {maskSupabaseKey(currentConfig?.anonKey)}
+                        </span>
+                        <span className="inline-flex items-center space-x-1 text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                          <ShieldCheck className="w-3 h-3" />
+                          <span>Secured</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs font-medium text-slate-600">Realtime Channel</span>
+                      <span className="text-xs font-semibold text-slate-800">
+                        public:participants
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Test Connection Button */}
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      type="button"
+                      onClick={handleTestConnection}
+                      disabled={isTesting}
+                      className="inline-flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs disabled:opacity-50"
+                    >
+                      <Play className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>{isTesting ? 'Testing Connection...' : 'Test Active Connection'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowOverrideSection(!showOverrideSection)}
+                      className="inline-flex items-center space-x-1 text-xs text-slate-500 hover:text-slate-800 font-medium py-1 px-2 rounded-lg hover:bg-slate-100 transition"
+                    >
+                      <span>Custom Browser Override</span>
+                      {showOverrideSection ? (
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* View 2: Browser Local Storage Override */}
+              {source === 'localStorage' && (
+                <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 space-y-1.5">
+                  <div className="flex items-center space-x-2 font-bold text-amber-800">
+                    <Key className="w-4 h-4 text-amber-600" />
+                    <span>Browser Local Storage Override Active</span>
+                  </div>
+                  <p>
+                    This browser is using custom credentials saved in localStorage.
+                    {hasEnv && ' You can clear them anytime to revert to the GitHub Secrets configuration.'}
+                  </p>
+                </div>
+              )}
+
+              {/* View 3: Not configured yet */}
+              {source === 'none' && (
+                <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 space-y-1.5">
+                  <div className="flex items-center space-x-2 font-bold text-amber-800">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    <span>No Supabase Configuration Found</span>
+                  </div>
+                  <p>
+                    Please configure repository secrets in GitHub Actions, or paste your credentials below to test immediately in this browser.
+                  </p>
+                </div>
+              )}
+
+              {/* Optional / Override Form (Only shown when not using env, or when expanded) */}
+              {(showOverrideSection || source !== 'env') && (
+                <form
+                  onSubmit={handleSaveOverride}
+                  className="space-y-4 pt-2 border-t border-slate-200"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                      {source === 'env' ? 'Manual Browser Override' : 'Configure Supabase Credentials'}
+                    </h4>
+                    {source === 'env' && (
+                      <span className="text-[11px] text-slate-400">
+                        Affects this browser only
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Supabase Project URL
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={overrideUrl}
+                      onChange={(e) => setOverrideUrl(e.target.value)}
+                      placeholder="https://xyzabcdefg.supabase.co"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
+                    />
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Root domain only (e.g. <code>https://xyz.supabase.co</code>). Do not include <code>/rest/v1</code>.
+                    </p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Supabase Anon Public Key
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowOverrideKey(!showOverrideKey)}
+                        className="inline-flex items-center space-x-1 text-[11px] text-slate-500 hover:text-slate-800"
+                      >
+                        {showOverrideKey ? (
+                          <>
+                            <EyeOff className="w-3 h-3" />
+                            <span>Hide Key</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3 h-3" />
+                            <span>Show Key</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showOverrideKey ? 'text' : 'password'}
+                        required
+                        value={overrideKey}
+                        onChange={(e) => setOverrideKey(e.target.value)}
+                        placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Must be the <strong>anon public</strong> key from Project Settings &rarr; API. Never use a Personal Access Token (PAT).
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+                    <div className="flex items-center space-x-2">
+                      {source === 'localStorage' && (
+                        <button
+                          type="button"
+                          onClick={handleClearLocal}
+                          className="inline-flex items-center space-x-1.5 text-xs text-red-600 hover:text-red-800 transition font-medium px-2 py-1.5 rounded-lg hover:bg-red-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Clear Local Override</span>
+                        </button>
+                      )}
+
+                      {source !== 'env' && (
+                        <button
+                          type="button"
+                          onClick={handleTestConnection}
+                          disabled={isTesting}
+                          className="inline-flex items-center space-x-1.5 text-xs text-slate-700 hover:text-slate-900 border border-slate-300 bg-white hover:bg-slate-50 transition font-medium px-3 py-1.5 rounded-lg shadow-xs disabled:opacity-50"
+                        >
+                          <Play className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{isTesting ? 'Testing...' : 'Test Connection'}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>{saveSuccess ? 'Saved!' : 'Save to Browser'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Test Result Message */}
+              {testResult && (
+                <div
+                  className={`p-3.5 rounded-xl border text-xs flex items-start space-x-2.5 ${
+                    testResult.success
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}
+                >
+                  {testResult.success ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                  )}
+                  <div>
+                    <p className="font-bold">{testResult.success ? 'Connection Success' : 'Connection Error'}</p>
+                    <p className="text-[11px] mt-0.5">{testResult.message}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Setup Guidelines & SQL Schema Tab */
+            <div className="space-y-6">
               {/* Step 1: Supabase Free Project */}
               <div className="space-y-2">
                 <div className="flex items-center space-x-2 text-slate-900 font-bold">
@@ -194,43 +503,40 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
                 </div>
               </div>
 
-              {/* Step 3: Get Supabase Keys */}
+              {/* Step 3: Key Security & Best Practices */}
               <div className="space-y-2">
                 <div className="flex items-center space-x-2 text-slate-900 font-bold">
                   <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs">
                     3
                   </span>
-                  <h3>Obtain your Project URL and Anon Public Key</h3>
+                  <h3>Obtain safe public client credentials</h3>
                 </div>
                 <p className="text-xs text-slate-600 pl-8">
-                  In Supabase, go to <strong>Project Settings &rarr; API</strong> (or Settings &rarr; Data API):
+                  In Supabase, navigate to <strong>Project Settings &rarr; API</strong> (or Settings &rarr; Data API):
                 </p>
-                <ul className="text-xs text-slate-600 pl-12 list-disc space-y-1">
-                  <li>
-                    <strong>Project URL:</strong> e.g. <code>https://your-project-id.supabase.co</code>
-                  </li>
-                  <li>
-                    <strong>anon / public key:</strong> the safe public client key (e.g. <code>eyJhbGciOi...</code>)
-                  </li>
-                </ul>
-
-                {/* Important Callout regarding Invalid path specified in request URL */}
-                <div className="ml-8 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
-                  <div className="flex items-center space-x-1.5 font-bold text-amber-800">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>Avoid "Invalid path specified in request URL":</span>
+                <div className="pl-8 space-y-2">
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+                    <p className="font-semibold text-slate-900">Required credentials:</p>
+                    <ul className="list-disc pl-4 text-slate-600 space-y-1">
+                      <li>
+                        <strong>Project URL:</strong> e.g. <code>https://your-project-id.supabase.co</code> (root domain only).
+                      </li>
+                      <li>
+                        <strong>anon public key:</strong> e.g. <code>eyJhbGciOi...</code>. Designed specifically for browser queries and guarded by Row Level Security (RLS).
+                      </li>
+                    </ul>
                   </div>
-                  <p className="text-amber-800">
-                    Make sure the URL is <strong>only</strong> the root domain: <code>https://your-ref.supabase.co</code>.
-                  </p>
-                  <ul className="list-disc pl-4 text-amber-700 space-y-0.5">
-                    <li>❌ Do <strong>NOT</strong> copy the REST URL (<code>.../rest/v1</code>).</li>
-                    <li>❌ Do <strong>NOT</strong> include a trailing slash (<code>https://your-ref.supabase.co/</code>).</li>
-                    <li>❌ Do <strong>NOT</strong> wrap the value in quotes.</li>
-                  </ul>
-                  <p className="text-[11px] text-amber-600 italic">
-                    (Our client now auto-cleans and sanitizes these formats automatically, but your GitHub Secret should ideally match the root URL).
-                  </p>
+
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
+                    <div className="flex items-center space-x-1.5 font-bold text-amber-800">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>Important: Do NOT use Personal Access Tokens (PATs)</span>
+                    </div>
+                    <p className="text-amber-800">
+                      Never paste an account Personal Access Token (starts with <code>sbp_</code>) or a <code>service_role</code> secret key.
+                      Only the <strong>anon public key</strong> should be configured for client applications.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -251,7 +557,7 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
                     <div className="my-1.5 p-2.5 bg-slate-100 rounded-lg font-mono text-[11px] space-y-1.5">
                       <div>
                         Name: <strong className="text-emerald-700">VITE_SUPABASE_URL</strong><br />
-                        Value: <code>https://your-project-id.supabase.co</code> <span className="text-slate-400">(no /rest/v1, no trailing slash)</span>
+                        Value: <code>https://your-project-id.supabase.co</code> <span className="text-slate-400">(root domain only)</span>
                       </div>
                       <div>
                         Name: <strong className="text-emerald-700">VITE_SUPABASE_ANON_KEY</strong><br />
@@ -260,129 +566,23 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
                     </div>
                   </li>
                   <li>
-                    Go to <strong>Settings</strong> &rarr; <strong>Pages</strong>. Under <strong>Build and deployment &rarr; Source</strong>, choose <strong>GitHub Actions</strong>.
+                    Go to <strong>Settings</strong> &rarr; <strong>Pages</strong>. Under <strong>Build and deployment &rarr; Source</strong>, select <strong>GitHub Actions</strong>.
                   </li>
                   <li>
-                    Push any commit to the <code>main</code> branch or trigger the workflow under the <strong>Actions</strong> tab to deploy automatically!
+                    Push any commit to <code>main</code> to deploy securely!
                   </li>
                 </ol>
               </div>
-            </>
-          ) : (
-            <div className="space-y-4">
-              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-900">
-                <p className="font-semibold mb-1">Live Browser Configuration &amp; Diagnostics</p>
-                <p>
-                  You can paste your Supabase URL and Anon Key right here to test or override settings in real time.
-                  Any trailing slash or <code>/rest/v1</code> will be automatically stripped.
-                </p>
-              </div>
-
-              {source === 'env' && (
-                <div className="p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl text-xs flex items-center space-x-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600" />
-                  <span>Using credentials baked into GitHub Actions build (<code>VITE_SUPABASE_URL</code>).</span>
-                </div>
-              )}
-
-              {source === 'localStorage' && (
-                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs flex items-center space-x-2">
-                  <Key className="w-4 h-4 shrink-0 text-amber-600" />
-                  <span>Using browser local storage override. Click "Clear Local Keys" to revert to GitHub build secrets.</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSaveLocal} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Supabase Project URL
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://xyzabcdefg.supabase.co"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white"
-                  />
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Must be root domain only (e.g. <code>https://xyz.supabase.co</code>). Do not include <code>/rest/v1</code>.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Supabase Anon Public Key
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={anonKey}
-                    onChange={(e) => setAnonKey(e.target.value)}
-                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white"
-                  />
-                </div>
-
-                {testResult && (
-                  <div
-                    className={`p-3 rounded-xl border text-xs flex items-start space-x-2 ${
-                      testResult.success
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                        : 'bg-red-50 border-red-200 text-red-800'
-                    }`}
-                  >
-                    {testResult.success ? (
-                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
-                    ) : (
-                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
-                    )}
-                    <div>
-                      <p className="font-bold">{testResult.success ? 'Connection Success' : 'Connection Failed'}</p>
-                      <p className="text-[11px] mt-0.5">{testResult.message}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={handleClearLocal}
-                      className="inline-flex items-center space-x-1.5 text-xs text-red-600 hover:text-red-800 transition font-medium px-2 py-1.5 rounded-lg hover:bg-red-50"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Clear Local Keys</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleTestConnection}
-                      disabled={isTesting}
-                      className="inline-flex items-center space-x-1.5 text-xs text-slate-700 hover:text-slate-900 border border-slate-300 bg-white hover:bg-slate-50 transition font-medium px-3 py-1.5 rounded-lg shadow-xs disabled:opacity-50"
-                    >
-                      <Play className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>{isTesting ? 'Testing...' : 'Test Connection'}</span>
-                    </button>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    <span>{saveSuccess ? 'Saved!' : 'Save Credentials'}</span>
-                  </button>
-                </div>
-              </form>
             </div>
           )}
         </div>
 
         {/* Modal Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
-          <span className="text-xs text-slate-500">
-            PadelDoodle &bull; 100% Client-Side &amp; Serverless
-          </span>
+          <div className="flex items-center space-x-1.5 text-xs text-slate-500">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span>PadelDoodle &bull; Client-Side Security Enforced</span>
+          </div>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition"
