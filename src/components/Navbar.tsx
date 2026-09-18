@@ -1,9 +1,8 @@
 import React from 'react';
-import { Settings, Database, Plus } from 'lucide-react';
+import { Database, Plus } from 'lucide-react';
 
 interface NavbarProps {
   isConnected: boolean;
-  onOpenSetup: () => void;
   onOpenVote: () => void;
   year: number;
   onYearChange: (year: number) => void;
@@ -11,7 +10,6 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({
   isConnected,
-  onOpenSetup,
   onOpenVote,
   year,
   onYearChange,
@@ -71,25 +69,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Connected</span>
             </div>
           ) : (
-            <button
-              onClick={onOpenSetup}
-              className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition border bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100 animate-pulse"
-              title="Click to configure Supabase connection"
+            <div
+              className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border bg-amber-50 text-amber-800 border-amber-200 select-none"
+              title="Database not configured"
             >
               <span className="w-2 h-2 rounded-full bg-amber-500 ring-2 ring-amber-300" />
               <Database className="w-3.5 h-3.5 hidden sm:inline" />
-              <span>Setup Required</span>
-            </button>
+              <span>Not Connected</span>
+            </div>
           )}
-
-          {/* Setup / Settings button */}
-          <button
-            onClick={onOpenSetup}
-            className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
-            title="Connection status and security"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
 
           {/* Vote CTA */}
           <button

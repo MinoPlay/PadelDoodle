@@ -3,10 +3,9 @@ import { Navbar } from './components/Navbar';
 import { StatsCards } from './components/StatsCards';
 import { DoodleTable } from './components/DoodleTable';
 import { VoteModal } from './components/VoteModal';
-import { SetupGuideModal } from './components/SetupGuideModal';
 import { Participant } from './types';
 import { getDefaultYear, generatePollDates } from './lib/dates';
-import { getSupabase, getSupabaseConfig } from './lib/supabase';
+import { getSupabase } from './lib/supabase';
 import { AlertTriangle, RefreshCw, Sparkles, CheckCircle, Share2 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -20,7 +19,6 @@ export const App: React.FC = () => {
 
   const [isVoteOpen, setIsVoteOpen] = useState<boolean>(false);
   const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
-  const [isSetupOpen, setIsSetupOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -63,15 +61,6 @@ export const App: React.FC = () => {
 
   // Initial load and Realtime listener
   useEffect(() => {
-    const config = getSupabaseConfig();
-    if (!config) {
-      setIsConnected(false);
-      setIsLoading(false);
-      // If not configured, auto open setup guide on first visit
-      setIsSetupOpen(true);
-      return;
-    }
-
     loadParticipants();
 
     const supabase = getSupabase();
@@ -102,8 +91,7 @@ export const App: React.FC = () => {
   ): Promise<boolean> => {
     const supabase = getSupabase();
     if (!supabase) {
-      setError('Supabase is not configured. Please open Setup to configure credentials.');
-      setIsSetupOpen(true);
+      setError('Supabase is not configured.');
       return false;
     }
 
@@ -191,7 +179,6 @@ export const App: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-slate-50/50">
       <Navbar
         isConnected={isConnected}
-        onOpenSetup={() => setIsSetupOpen(true)}
         onOpenVote={() => {
           setEditingParticipant(null);
           setIsVoteOpen(true);
@@ -202,27 +189,6 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-        {/* Supabase Not Configured Banner */}
-        {!isConnected && !isLoading && (
-          <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-bold text-sm">Supabase connection not configured yet</h3>
-                <p className="text-xs text-amber-700 mt-0.5">
-                  Follow our step-by-step guidelines to set up your free Supabase database or paste your credentials to test immediately.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsSetupOpen(true)}
-              className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs px-4 py-2 rounded-xl transition shadow-xs"
-            >
-              Configure Database
-            </button>
-          </div>
-        )}
-
         {/* Database Error Banner */}
         {error && (
           <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
@@ -239,12 +205,6 @@ export const App: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2 shrink-0">
-              <button
-                onClick={() => setIsSetupOpen(true)}
-                className="px-2.5 py-1 bg-white border border-red-200 text-red-800 hover:bg-red-50 rounded-lg font-semibold transition"
-              >
-                Review Connection
-              </button>
               <button
                 onClick={loadParticipants}
                 className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition"
@@ -353,15 +313,6 @@ export const App: React.FC = () => {
         onSubmit={handleVoteSubmit}
         dates={dates}
         editingParticipant={editingParticipant}
-      />
-
-      {/* Setup Guide Modal */}
-      <SetupGuideModal
-        isOpen={isSetupOpen}
-        onClose={() => setIsSetupOpen(false)}
-        onConfigUpdated={() => {
-          loadParticipants();
-        }}
       />
     </div>
   );
