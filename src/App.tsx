@@ -224,7 +224,7 @@ export const App: React.FC = () => {
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1.5">
-              November &ndash; Christmas Availability
+              OfficialNotOffical Padel Club Outing - PART 3!
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
               Vote for any Friday or Saturday you can play. Anyone can modify selections in this trust-based poll.
