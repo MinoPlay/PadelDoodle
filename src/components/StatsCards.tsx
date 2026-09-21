@@ -56,7 +56,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({
       {/* Card 1: Total Participants */}
       <div className="bg-court-900/80 rounded-2xl p-5 border border-court-700/60 shadow-lg shadow-black/30 flex items-center space-x-4">
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-ball/10 text-ball border border-ball/20 flex items-center justify-center shrink-0">
-          <img src="/padel-assets/asset-demant-mascot.svg" alt="" className="w-9 h-9 sm:w-11 sm:h-11" />
+          <img src={`${import.meta.env.BASE_URL}padel-assets/asset-demant-mascot.svg`} alt="" className="w-9 h-9 sm:w-11 sm:h-11" />
         </div>
         <div>
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Players Voted</p>
@@ -70,7 +70,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({
       {/* Card 2: Leading Match Date */}
       <div className="bg-court-900/80 rounded-2xl p-5 border border-court-700/60 shadow-lg shadow-black/30 flex items-center space-x-4">
         <div className="w-12 h-12 rounded-xl bg-blue-400/10 text-blue-300 border border-blue-400/20 flex items-center justify-center shrink-0">
-          <img src="/padel-assets/asset-demant-trophy.svg" alt="" className="w-9 h-9 sm:w-11 sm:h-11" />
+          <img src={`${import.meta.env.BASE_URL}padel-assets/asset-demant-trophy.svg`} alt="" className="w-9 h-9 sm:w-11 sm:h-11" />
         </div>
         <div className="min-w-0">
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Leading Match Day</p>

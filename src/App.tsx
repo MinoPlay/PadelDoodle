@@ -218,7 +218,7 @@ export const App: React.FC = () => {
         {/* Header Hero Section */}
         <div className="overflow-hidden rounded-3xl border border-sky-400/25 bg-court-950 shadow-2xl shadow-blue-950/40">
           <img
-            src="/padel-assets/onodpc-header-banner.svg"
+            src={`${import.meta.env.BASE_URL}padel-assets/onodpc-header-banner.svg`}
             alt="Official Not Official Demant Padel Club — Padel, burgers, drinks"
             className="block w-full h-auto"
           />
@@ -296,7 +296,7 @@ export const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4">
           <div className="overflow-hidden rounded-2xl border border-sky-400/20 shadow-xl shadow-blue-950/30">
             <img
-              src="/padel-assets/onodpc-footer-banner.svg"
+              src={`${import.meta.env.BASE_URL}padel-assets/onodpc-footer-banner.svg`}
               alt="Official Not Official Demant Padel Club — Play, Feast, Repeat"
               className="block w-full h-auto"
             />
