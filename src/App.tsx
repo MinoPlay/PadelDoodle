@@ -232,10 +232,10 @@ export const App: React.FC = () => {
               </span>
             </div>
             <h2 className="text-[1.65rem] leading-tight sm:text-3xl font-extrabold text-slate-100 tracking-tight mt-1.5 max-w-3xl">
-              OfficialNotOffical Padel Club Outing - PART 3!
+              OfficialNotOfficalPadelClub Outing - PART 3!
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-              Vote for any Friday or Saturday you can play. Anyone can modify selections in this trust-based poll.
+              Vote for any Friday or Saturday you can attend. Anyone can modify selections in this trust-based poll.
             </p>
           </div>
 
