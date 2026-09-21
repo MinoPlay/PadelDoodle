@@ -188,7 +188,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-5 sm:space-y-6">
         {/* Database Error Banner */}
         {error && (
           <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
@@ -216,14 +216,22 @@ export const App: React.FC = () => {
         )}
 
         {/* Header Hero Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+        <div className="overflow-hidden rounded-3xl border border-sky-400/25 bg-court-950 shadow-2xl shadow-blue-950/40">
+          <img
+            src="/padel-assets/onodpc-header-banner.svg"
+            alt="Official Not Official Demant Padel Club — Padel, burgers, drinks"
+            className="block w-full h-auto"
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1 sm:pb-2">
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xs font-bold uppercase tracking-widest text-ball bg-ball/10 px-2.5 py-1 rounded-lg border border-ball/25">
                 Padel Poll &bull; {year} Season
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight mt-1.5">
+            <h2 className="text-[1.65rem] leading-tight sm:text-3xl font-extrabold text-slate-100 tracking-tight mt-1.5 max-w-3xl">
               OfficialNotOffical Padel Club Outing - PART 3!
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
@@ -231,18 +239,18 @@ export const App: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center space-x-2.5">
+          <div className="grid grid-cols-[1fr_auto_auto] sm:flex sm:items-center gap-2.5 w-full sm:w-auto">
             <button
               onClick={handleShare}
               className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-court-700 bg-court-900 hover:bg-court-800 text-slate-300 text-xs sm:text-sm font-semibold transition"
             >
               <Share2 className="w-4 h-4" />
-              <span>Share Poll</span>
+              <span className="hidden sm:inline">Share Poll</span>
             </button>
             <button
               onClick={loadParticipants}
               disabled={isLoading}
-              className="p-2 rounded-xl border border-court-700 bg-court-900 hover:bg-court-800 text-slate-400 hover:text-slate-100 transition"
+              className="p-2.5 rounded-xl border border-court-700 bg-court-900 hover:bg-court-800 text-slate-400 hover:text-slate-100 transition"
               title="Refresh data"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-ball' : ''}`} />
@@ -252,7 +260,7 @@ export const App: React.FC = () => {
                 setEditingParticipant(null);
                 setIsVoteOpen(true);
               }}
-              className="inline-flex items-center space-x-2 bg-ball hover:bg-ball-400 text-court-950 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-glow transition active:scale-95"
+              className="inline-flex items-center justify-center space-x-2 bg-ball hover:bg-ball-400 text-court-950 px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold shadow-glow transition active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
               <span>Add My Vote</span>
@@ -285,13 +293,22 @@ export const App: React.FC = () => {
 
       {/* Footer */}
       <footer className="border-t border-court-700/60 bg-court-950/70 py-6 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-400 space-y-1">
-          <p>
-            🎾 <strong className="text-slate-200">PadelDoodle</strong> &bull; Free open-source match polling built with React, Vite, Supabase &amp; GitHub Pages.
-          </p>
-          <p className="text-slate-500">
-            Trust-based participation &bull; No authentication required &bull; Live Realtime sync
-          </p>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4">
+          <div className="overflow-hidden rounded-2xl border border-sky-400/20 shadow-xl shadow-blue-950/30">
+            <img
+              src="/padel-assets/onodpc-footer-banner.svg"
+              alt="Official Not Official Demant Padel Club — Play, Feast, Repeat"
+              className="block w-full h-auto"
+            />
+          </div>
+          <div className="text-center text-xs text-slate-400 space-y-1">
+            <p>
+              🎾 <strong className="text-slate-200">PadelDoodle</strong> &bull; Free open-source match polling built with React, Vite, Supabase &amp; GitHub Pages.
+            </p>
+            <p className="text-slate-500">
+              Trust-based participation &bull; No authentication required &bull; Live Realtime sync
+            </p>
+          </div>
         </div>
       </footer>
 

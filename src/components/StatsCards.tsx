@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Trophy, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { Participant, PollDate } from '../types';
 
 interface StatsCardsProps {
@@ -52,15 +52,15 @@ export const StatsCards: React.FC<StatsCardsProps> = ({
   }, [dates, countsByDate, participants.length]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
       {/* Card 1: Total Participants */}
       <div className="bg-court-900/80 rounded-2xl p-5 border border-court-700/60 shadow-lg shadow-black/30 flex items-center space-x-4">
-        <div className="w-12 h-12 rounded-xl bg-ball/10 text-ball border border-ball/20 flex items-center justify-center shrink-0">
-          <Users className="w-6 h-6" />
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-ball/10 text-ball border border-ball/20 flex items-center justify-center shrink-0">
+          <img src="/padel-assets/asset-demant-mascot.svg" alt="" className="w-9 h-9 sm:w-11 sm:h-11" />
         </div>
         <div>
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Players Voted</p>
-          <div className="flex items-baseline space-x-2">
+          <div className="flex items-baseline space-x-1.5 sm:space-x-2">
             <span className="text-2xl font-bold text-slate-100">{participants.length}</span>
             <span className="text-xs text-slate-500">on the court</span>
           </div>
@@ -69,8 +69,8 @@ export const StatsCards: React.FC<StatsCardsProps> = ({
 
       {/* Card 2: Leading Match Date */}
       <div className="bg-court-900/80 rounded-2xl p-5 border border-court-700/60 shadow-lg shadow-black/30 flex items-center space-x-4">
-        <div className="w-12 h-12 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 flex items-center justify-center shrink-0">
-          <Trophy className="w-6 h-6" />
+        <div className="w-12 h-12 rounded-xl bg-blue-400/10 text-blue-300 border border-blue-400/20 flex items-center justify-center shrink-0">
+          <img src="/padel-assets/asset-demant-trophy.svg" alt="" className="w-9 h-9 sm:w-11 sm:h-11" />
         </div>
         <div className="min-w-0">
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Leading Match Day</p>
@@ -90,13 +90,13 @@ export const StatsCards: React.FC<StatsCardsProps> = ({
       </div>
 
       {/* Card 3: Trust-based & Dates info */}
-      <div className="court-net bg-gradient-to-br from-court-700 to-court-850 rounded-2xl p-5 text-white border border-court-600/60 shadow-lg shadow-black/30 flex items-center justify-between">
+      <div className="court-net bg-gradient-to-br from-court-700 to-court-850 rounded-2xl p-4 sm:p-5 text-white border border-court-600/60 shadow-lg shadow-black/30 flex items-center justify-between gap-3">
         <div>
           <div className="flex items-center space-x-1.5 text-ball text-xs font-medium mb-1">
             <ShieldCheck className="w-4 h-4" />
             <span>Trust-Based Polling</span>
           </div>
-          <p className="text-sm font-semibold text-slate-100">
+          <p className="text-sm font-semibold text-slate-100 leading-snug">
             Anyone can add or edit selections
           </p>
           <p className="text-xs text-slate-400 mt-1">

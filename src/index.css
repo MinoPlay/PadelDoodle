@@ -7,14 +7,38 @@ body {
   margin: 0;
   padding: 0;
   color-scheme: dark;
+  min-width: 320px;
+  overflow-x: hidden;
 }
+
+button,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .court-bg {
+    background-size: 100% 100%, 100% 100%, 42px 42px, 42px 42px;
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
 
 /* Padel court backdrop: blue court surface with faint white court lines */
 .court-bg {
   background-color: #050a12;
   background-image:
-    radial-gradient(900px 500px at 50% -10%, rgba(40, 68, 105, 0.55), transparent 70%),
-    radial-gradient(700px 400px at 100% 100%, rgba(16, 185, 129, 0.12), transparent 70%),
+    radial-gradient(900px 500px at 50% -10%, rgba(37, 96, 148, 0.62), transparent 70%),
+    radial-gradient(700px 400px at 100% 100%, rgba(14, 165, 233, 0.12), transparent 70%),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 64px 64px, 64px 64px;
@@ -48,9 +72,9 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #284469;
+  background: #1e4973;
 }
 
 ::selection {
-  background: rgba(214, 244, 41, 0.3);
+  background: rgba(56, 189, 248, 0.3);
 }
