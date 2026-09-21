@@ -92,7 +92,7 @@
                     </g>
 
                     <!-- Right Group: Anime Chibi Food & Drinks -->
-                    <g transform="translate(950, 230)">
+                    <g transform="translate(1025, 275) scale(0.82)">
                         <ellipse cx="0" cy="65" rx="65" ry="14" fill="rgba(0,0,0,0.4)"/>
                         <!-- Bun -->
                         <path d="M-48,35 C-48,55 48,55 48,35 Z" fill="#E68A2E" stroke="#000" stroke-width="4"/>
