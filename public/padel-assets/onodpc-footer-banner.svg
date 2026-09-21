@@ -1,0 +1,68 @@
+<svg id="footer-svg" class="w-full h-auto min-w-[700px] rounded-lg shadow-2xl transition-all duration-300" viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="sunsetSky" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#020617"/>
+                            <stop offset="40%" stop-color="#0B1F3A"/>
+                            <stop offset="75%" stop-color="#075985"/>
+                            <stop offset="100%" stop-color="#0369A1"/>
+                        </linearGradient>
+                        <linearGradient id="sunGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#7DD3FC"/>
+                            <stop offset="100%" stop-color="#2563EB"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Background Sunset -->
+                    <rect width="1200" height="320" rx="16" fill="url(#sunsetSky)"/>
+
+                    <!-- Sun with Synthwave Lines -->
+                    <circle cx="600" cy="210" r="125" fill="url(#sunGrad)" opacity="0.9"/>
+                    <line x1="460" y1="190" x2="740" y2="190" stroke="#020617" stroke-width="4"/>
+                    <line x1="470" y1="210" x2="730" y2="210" stroke="#020617" stroke-width="6"/>
+                    <line x1="490" y1="230" x2="710" y2="230" stroke="#020617" stroke-width="8"/>
+
+                    <!-- Court Fences Silhouette -->
+                    <g stroke="#0D0618" stroke-width="2" opacity="0.6">
+                        <line x1="100" y1="180" x2="1100" y2="180"/>
+                        <line x1="100" y1="210" x2="1100" y2="210"/>
+                        <line x1="200" y1="140" x2="200" y2="250"/>
+                        <line x1="400" y1="140" x2="400" y2="250"/>
+                        <line x1="800" y1="140" x2="800" y2="250"/>
+                        <line x1="1000" y1="140" x2="1000" y2="250"/>
+                    </g>
+
+                    <!-- Foreground Ground Bar Table -->
+                    <rect x="0" y="245" width="1200" height="75" fill="#0D0E15"/>
+
+                    <!-- Resting Rackets -->
+                    <g transform="translate(280, 230) rotate(-65)">
+                        <rect x="-8" y="30" width="16" height="50" fill="#1E293B" stroke="#000" stroke-width="2"/>
+                        <ellipse cx="0" cy="0" rx="35" ry="42" fill="#2563EB" stroke="#000" stroke-width="4"/>
+                    </g>
+                    <g transform="translate(330, 232) rotate(-45)">
+                        <rect x="-8" y="30" width="16" height="50" fill="#1E293B" stroke="#000" stroke-width="2"/>
+                        <ellipse cx="0" cy="0" rx="35" ry="42" fill="#00F0FF" stroke="#000" stroke-width="4"/>
+                    </g>
+
+                    <!-- Food Table Setup -->
+                    <g transform="translate(600, 235)">
+                        <path d="M-28,0 C-28,-22 28,-22 28,0 Z" fill="#F4A261" stroke="#000" stroke-width="3"/>
+                        <rect x="-30" y="0" width="60" height="7" fill="#5C2C16" stroke="#000" stroke-width="2"/>
+                        <path d="M-26,7 C-26,18 26,18 26,7 Z" fill="#E68A2E" stroke="#000" stroke-width="3"/>
+                        
+                        <!-- Beer Glasses Clinking -->
+                        <g transform="translate(65, -12) rotate(10)">
+                            <rect x="-14" y="-18" width="28" height="40" rx="4" fill="#FFC107" stroke="#000" stroke-width="3"/>
+                            <path d="M-16,-18 C-16,-26 16,-26 16,-18 Z" fill="#FFF" stroke="#000" stroke-width="2"/>
+                        </g>
+                        <g transform="translate(98, -12) rotate(-10)">
+                            <rect x="-14" y="-18" width="28" height="40" rx="4" fill="#FFC107" stroke="#000" stroke-width="3"/>
+                            <path d="M-16,-18 C-16,-26 16,-26 16,-18 Z" fill="#FFF" stroke="#000" stroke-width="2"/>
+                        </g>
+                    </g>
+
+                    <!-- Glowing Neon Motto Text -->
+                    <text x="600" y="292" text-anchor="middle" fill="#FFFFFF" font-family="Bangers, cursive" font-size="28" letter-spacing="3" stroke="#000" stroke-width="4" paint-order="stroke fill">
+                        OFFICIAL NOT OFFICIAL DEMANT PADEL CLUB • PLAY, FEAST, REPEAT!
+                    </text>
+                </svg>

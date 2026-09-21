@@ -67,14 +67,14 @@ export const DoodleTable: React.FC<DoodleTableProps> = ({
 
   return (
     <div className="bg-court-900/80 rounded-3xl border border-court-700/60 shadow-lg shadow-black/30 overflow-hidden flex flex-col">
-      <div className="court-net p-4 border-b border-court-700/60 bg-court-850/70 flex flex-wrap items-center justify-between gap-2">
+      <div className="court-net p-3 sm:p-4 border-b border-court-700/60 bg-court-850/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-2">
           <span className="text-sm font-bold text-slate-100">Court Availability Grid</span>
           <span className="text-xs text-slate-400">
             ({participants.length} {participants.length === 1 ? 'player' : 'players'} responded)
           </span>
         </div>
-        <div className="text-xs text-slate-400 flex items-center space-x-3">
+        <div className="text-[11px] sm:text-xs text-slate-400 flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="inline-flex items-center space-x-1">
             <span className="w-2.5 h-2.5 rounded-full bg-ball inline-block"></span>
             <span>Available</span>
@@ -84,19 +84,22 @@ export const DoodleTable: React.FC<DoodleTableProps> = ({
             <span>Unavailable</span>
           </span>
           <span className="inline-flex items-center space-x-1">
-            <span className="text-amber-300 font-bold">★</span>
+            <span className="text-sky-300 font-bold">★</span>
             <span>Top Pick</span>
           </span>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overscroll-x-contain">
+        <div className="px-3 py-2 text-[11px] text-slate-500 sm:hidden border-b border-court-800">
+          Swipe sideways to see every match date.
+        </div>
         <table className="w-full text-left border-collapse min-w-[700px]">
           {/* Table Header */}
           <thead>
             {/* Month Span Row */}
-            <tr className="border-b border-court-700/60 text-xs font-bold uppercase tracking-wider text-slate-400 bg-court-850">
-              <th className="p-3 sticky left-0 z-20 bg-court-850 min-w-[200px] border-r border-court-700/60">
+            <tr className="border-b border-court-700/60 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 bg-court-850">
+              <th className="p-2.5 sm:p-3 sticky left-0 z-20 bg-court-850 min-w-[160px] sm:min-w-[200px] border-r border-court-700/60">
                 Player
               </th>
               {novemberDates.length > 0 && (
@@ -119,7 +122,7 @@ export const DoodleTable: React.FC<DoodleTableProps> = ({
 
             {/* Date Details Row */}
             <tr className="border-b border-court-700/60 bg-court-850/60 text-slate-300 text-xs">
-              <th className="p-3 sticky left-0 z-20 bg-court-850 border-r border-court-700/60">
+              <th className="p-2.5 sm:p-3 sticky left-0 z-20 bg-court-850 border-r border-court-700/60">
                 <span className="text-slate-500 font-normal">Click pencil to modify</span>
               </th>
               {dates.map((d) => {
@@ -127,11 +130,11 @@ export const DoodleTable: React.FC<DoodleTableProps> = ({
                 return (
                   <th
                     key={d.id}
-                    className={`p-2 text-center min-w-[62px] border-r border-court-800 ${
+                    className={`p-1.5 sm:p-2 text-center min-w-[58px] sm:min-w-[62px] border-r border-court-800 ${
                       isTop ? 'bg-ball/10 font-bold' : ''
                     }`}
                   >
-                    <div className="text-[11px] font-semibold text-slate-500 uppercase">
+                    <div className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase">
                       {d.weekday}
                     </div>
                     <div className={`text-sm font-bold ${isTop ? 'text-ball' : 'text-slate-200'}`}>
@@ -231,7 +234,7 @@ export const DoodleTable: React.FC<DoodleTableProps> = ({
                     <div className="flex flex-col items-center justify-center">
                       <span className="text-sm">{count}</span>
                       {isTop && count > 0 && (
-                        <div className="flex items-center text-[10px] text-amber-300 font-bold mt-0.5">
+                        <div className="flex items-center text-[10px] text-sky-300 font-bold mt-0.5">
                           <Trophy className="w-3 h-3 inline mr-0.5" />
                           <span>Top</span>
                         </div>

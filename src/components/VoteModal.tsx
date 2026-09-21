@@ -84,7 +84,7 @@ export const VoteModal: React.FC<VoteModalProps> = ({
         particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#d6f429', '#b4cf17', '#10b981', '#284469'],
+        colors: ['#7dd3fc', '#38bdf8', '#2563eb', '#1e4973'],
       });
       onClose();
     }
@@ -107,16 +107,16 @@ export const VoteModal: React.FC<VoteModalProps> = ({
     }`;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-court-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-court-900 w-full max-w-2xl rounded-3xl shadow-2xl shadow-black/50 border border-court-700/60 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-court-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+      <div className="bg-court-900 w-full max-w-2xl max-h-[95dvh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl shadow-black/50 border border-court-700/60 overflow-hidden animate-in fade-in slide-in-from-bottom-3 sm:zoom-in-95 duration-200 flex flex-col">
         {/* Header */}
-        <div className="court-net px-6 py-5 bg-gradient-to-r from-court-700 to-court-850 text-white flex items-center justify-between border-b border-court-700">
+        <div className="court-net px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-r from-court-700 to-court-850 text-white flex items-center justify-between gap-3 border-b border-court-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-ball/15 border border-ball/30 flex items-center justify-center">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-ball/15 border border-ball/30 flex items-center justify-center shrink-0">
               <Calendar className="w-5 h-5 text-ball" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-100">
+              <h2 className="text-base sm:text-lg font-bold text-slate-100 leading-tight">
                 {editingParticipant ? `Modify ${editingParticipant.name}'s Availability` : 'Add Your Match Availability'}
               </h2>
               <p className="text-xs text-slate-400">
@@ -133,7 +133,7 @@ export const VoteModal: React.FC<VoteModalProps> = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5 sm:space-y-6 overflow-y-auto">
           {error && (
             <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl text-xs flex items-center space-x-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -167,7 +167,7 @@ export const VoteModal: React.FC<VoteModalProps> = ({
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Select Dates ({selectedDates.length} of {dates.length} chosen)
               </label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap justify-end gap-1.5">
                 <button
                   type="button"
                   onClick={selectAll}
@@ -200,7 +200,7 @@ export const VoteModal: React.FC<VoteModalProps> = ({
             </div>
 
             {/* Date Grid */}
-            <div className="space-y-4 max-h-72 overflow-y-auto pr-1">
+            <div className="space-y-4 max-h-[38vh] sm:max-h-72 overflow-y-auto pr-1">
               {/* November */}
               {novemberDates.length > 0 && (
                 <div>
@@ -278,18 +278,18 @@ export const VoteModal: React.FC<VoteModalProps> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-court-800">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 border-t border-court-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-100 transition"
+              className="px-4 py-2.5 sm:py-2 text-sm font-semibold text-slate-400 hover:text-slate-100 transition rounded-xl"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center space-x-2 bg-ball hover:bg-ball-400 disabled:opacity-50 text-court-950 px-5 py-2.5 rounded-xl text-sm font-bold shadow-glow transition active:scale-95"
+              className="inline-flex items-center justify-center space-x-2 bg-ball hover:bg-ball-400 disabled:opacity-50 text-court-950 px-5 py-2.5 rounded-xl text-sm font-bold shadow-glow transition active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
               <span>{isSubmitting ? 'Saving...' : editingParticipant ? 'Save Changes' : 'Submit Availability'}</span>
