@@ -7,21 +7,35 @@ export default {
   theme: {
     extend: {
       colors: {
-        padel: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          accent: '#0284c7',
-          ball: '#d9f99d',
-        }
-      }
+        // Dark padel-court surfaces (glass-walled blue court at night)
+        court: {
+          950: '#050a12',
+          900: '#0a1220',
+          850: '#0f1a2c',
+          800: '#152338',
+          700: '#1d3150',
+          600: '#284469',
+          500: '#365b8a',
+          line: '#e2e8f0',
+        },
+        // Padel ball accents
+        ball: {
+          DEFAULT: '#d6f429',
+          400: '#e3fb63',
+          500: '#d6f429',
+          600: '#b4cf17',
+          700: '#8da510',
+        },
+        turf: {
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+        },
+      },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(214, 244, 41, 0.25), 0 8px 30px -8px rgba(214, 244, 41, 0.35)',
+      },
     },
   },
   plugins: [],

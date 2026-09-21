@@ -176,7 +176,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/50">
+    <div className="min-h-screen flex flex-col court-bg text-slate-200">
       <Navbar
         isConnected={isConnected}
         onOpenVote={() => {
@@ -191,13 +191,13 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         {/* Database Error Banner */}
         {error && (
-          <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">{error}</p>
                 {error.includes('Invalid path specified') && (
-                  <p className="text-red-700 mt-1">
+                  <p className="text-red-300 mt-1">
                     💡 <strong>Diagnosis:</strong> This occurs when the Supabase URL includes <code>/rest/v1</code> or a trailing slash <code>/</code>.
                     Your GitHub Secret <code>VITE_SUPABASE_URL</code> should be just <code>https://&lt;project-ref&gt;.supabase.co</code>.
                   </p>
@@ -207,7 +207,7 @@ export const App: React.FC = () => {
             <div className="flex items-center space-x-2 shrink-0">
               <button
                 onClick={loadParticipants}
-                className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition"
+                className="px-2.5 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition"
               >
                 Retry
               </button>
@@ -219,14 +219,14 @@ export const App: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+              <span className="text-xs font-bold uppercase tracking-widest text-ball bg-ball/10 px-2.5 py-1 rounded-lg border border-ball/25">
                 Padel Poll &bull; {year} Season
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1.5">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight mt-1.5">
               OfficialNotOffical Padel Club Outing - PART 3!
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+            <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
               Vote for any Friday or Saturday you can play. Anyone can modify selections in this trust-based poll.
             </p>
           </div>
@@ -234,7 +234,7 @@ export const App: React.FC = () => {
           <div className="flex items-center space-x-2.5">
             <button
               onClick={handleShare}
-              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold shadow-xs transition"
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-court-700 bg-court-900 hover:bg-court-800 text-slate-300 text-xs sm:text-sm font-semibold transition"
             >
               <Share2 className="w-4 h-4" />
               <span>Share Poll</span>
@@ -242,17 +242,17 @@ export const App: React.FC = () => {
             <button
               onClick={loadParticipants}
               disabled={isLoading}
-              className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition shadow-xs"
+              className="p-2 rounded-xl border border-court-700 bg-court-900 hover:bg-court-800 text-slate-400 hover:text-slate-100 transition"
               title="Refresh data"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-emerald-600' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-ball' : ''}`} />
             </button>
             <button
               onClick={() => {
                 setEditingParticipant(null);
                 setIsVoteOpen(true);
               }}
-              className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-emerald-600/30 transition active:scale-95"
+              className="inline-flex items-center space-x-2 bg-ball hover:bg-ball-400 text-court-950 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-glow transition active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
               <span>Add My Vote</span>
@@ -284,12 +284,12 @@ export const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 space-y-1">
+      <footer className="border-t border-court-700/60 bg-court-950/70 py-6 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-400 space-y-1">
           <p>
-            🎾 <strong>PadelDoodle</strong> &bull; Free open-source match polling built with React, Vite, Supabase &amp; GitHub Pages.
+            🎾 <strong className="text-slate-200">PadelDoodle</strong> &bull; Free open-source match polling built with React, Vite, Supabase &amp; GitHub Pages.
           </p>
-          <p className="text-slate-400">
+          <p className="text-slate-500">
             Trust-based participation &bull; No authentication required &bull; Live Realtime sync
           </p>
         </div>
@@ -297,8 +297,8 @@ export const App: React.FC = () => {
 
       {/* Toast notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2.5 text-xs font-semibold animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle className="w-4 h-4 text-emerald-400" />
+        <div className="fixed bottom-6 right-6 z-50 bg-court-850 border border-ball/30 text-slate-100 px-4 py-3 rounded-2xl shadow-glow flex items-center space-x-2.5 text-xs font-semibold animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle className="w-4 h-4 text-ball" />
           <span>{toastMessage}</span>
         </div>
       )}

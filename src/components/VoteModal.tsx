@@ -84,7 +84,7 @@ export const VoteModal: React.FC<VoteModalProps> = ({
         particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#22c55e', '#16a34a', '#d9f99d', '#0284c7'],
+        colors: ['#d6f429', '#b4cf17', '#10b981', '#284469'],
       });
       onClose();
     }
@@ -94,27 +94,39 @@ export const VoteModal: React.FC<VoteModalProps> = ({
   const novemberDates = dates.filter((d) => d.monthName === 'November');
   const decemberDates = dates.filter((d) => d.monthName === 'December');
 
+  const dateButtonClass = (isSelected: boolean) =>
+    `p-2.5 rounded-xl border text-left transition flex items-center justify-between ${
+      isSelected
+        ? 'bg-ball/15 border-ball text-ball font-semibold ring-1 ring-ball'
+        : 'bg-court-850 hover:bg-court-800 border-court-700 text-slate-300'
+    }`;
+
+  const checkboxClass = (isSelected: boolean) =>
+    `w-5 h-5 rounded-md flex items-center justify-center transition ${
+      isSelected ? 'bg-ball text-court-950' : 'border border-court-600 bg-court-900'
+    }`;
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-court-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-court-900 w-full max-w-2xl rounded-3xl shadow-2xl shadow-black/50 border border-court-700/60 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between">
+        <div className="court-net px-6 py-5 bg-gradient-to-r from-court-700 to-court-850 text-white flex items-center justify-between border-b border-court-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-ball/15 border border-ball/30 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-ball" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">
+              <h2 className="text-lg font-bold text-slate-100">
                 {editingParticipant ? `Modify ${editingParticipant.name}'s Availability` : 'Add Your Match Availability'}
               </h2>
-              <p className="text-xs text-emerald-100">
+              <p className="text-xs text-slate-400">
                 Choose all the dates you are available to play Padel
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -123,7 +135,7 @@ export const VoteModal: React.FC<VoteModalProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center space-x-2">
+            <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl text-xs flex items-center space-x-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -131,11 +143,11 @@ export const VoteModal: React.FC<VoteModalProps> = ({
 
           {/* Name input */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
               Player Name
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -144,7 +156,7 @@ export const VoteModal: React.FC<VoteModalProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Carlos, Alex, Maria..."
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-court-850 border border-court-700 text-slate-100 placeholder:text-slate-500 rounded-xl text-sm font-medium focus:ring-2 focus:ring-ball focus:border-ball focus:outline-none transition"
               />
             </div>
           </div>
@@ -152,35 +164,35 @@ export const VoteModal: React.FC<VoteModalProps> = ({
           {/* Quick Select Buttons */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Select Dates ({selectedDates.length} of {dates.length} chosen)
               </label>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
                   onClick={selectAll}
-                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md transition"
+                  className="px-2 py-1 bg-court-800 hover:bg-court-700 text-slate-200 text-xs font-semibold rounded-md transition"
                 >
                   All
                 </button>
                 <button
                   type="button"
                   onClick={selectFridays}
-                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md transition"
+                  className="px-2 py-1 bg-court-800 hover:bg-court-700 text-slate-200 text-xs font-semibold rounded-md transition"
                 >
                   Fridays Only
                 </button>
                 <button
                   type="button"
                   onClick={selectSaturdays}
-                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md transition"
+                  className="px-2 py-1 bg-court-800 hover:bg-court-700 text-slate-200 text-xs font-semibold rounded-md transition"
                 >
                   Saturdays Only
                 </button>
                 <button
                   type="button"
                   onClick={clearAll}
-                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-medium rounded-md transition"
+                  className="px-2 py-1 bg-court-800 hover:bg-court-700 text-slate-400 text-xs font-medium rounded-md transition"
                 >
                   Clear
                 </button>
@@ -192,9 +204,9 @@ export const VoteModal: React.FC<VoteModalProps> = ({
               {/* November */}
               {novemberDates.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
                     <span>November</span>
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] bg-court-800 text-slate-300 px-1.5 py-0.5 rounded">
                       {novemberDates.length} dates
                     </span>
                   </h4>
@@ -206,27 +218,17 @@ export const VoteModal: React.FC<VoteModalProps> = ({
                           key={item.id}
                           type="button"
                           onClick={() => toggleDate(item.id)}
-                          className={`p-2.5 rounded-xl border text-left transition flex items-center justify-between ${
-                            isSelected
-                              ? 'bg-emerald-500/10 border-emerald-500 text-emerald-950 font-semibold ring-1 ring-emerald-500'
-                              : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
-                          }`}
+                          className={dateButtonClass(isSelected)}
                         >
                           <div>
-                            <span className="text-[11px] uppercase font-bold text-slate-400 block">
+                            <span className="text-[11px] uppercase font-bold text-slate-500 block">
                               {item.weekday}
                             </span>
                             <span className="text-sm">
                               Nov {item.dayNumber}
                             </span>
                           </div>
-                          <div
-                            className={`w-5 h-5 rounded-md flex items-center justify-center transition ${
-                              isSelected
-                                ? 'bg-emerald-600 text-white'
-                                : 'border border-slate-300 bg-white'
-                            }`}
-                          >
+                          <div className={checkboxClass(isSelected)}>
                             {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                           </div>
                         </button>
@@ -239,9 +241,9 @@ export const VoteModal: React.FC<VoteModalProps> = ({
               {/* December */}
               {decemberDates.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
                     <span>December (until Christmas)</span>
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] bg-court-800 text-slate-300 px-1.5 py-0.5 rounded">
                       {decemberDates.length} dates
                     </span>
                   </h4>
@@ -253,27 +255,17 @@ export const VoteModal: React.FC<VoteModalProps> = ({
                           key={item.id}
                           type="button"
                           onClick={() => toggleDate(item.id)}
-                          className={`p-2.5 rounded-xl border text-left transition flex items-center justify-between ${
-                            isSelected
-                              ? 'bg-emerald-500/10 border-emerald-500 text-emerald-950 font-semibold ring-1 ring-emerald-500'
-                              : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
-                          }`}
+                          className={dateButtonClass(isSelected)}
                         >
                           <div>
-                            <span className="text-[11px] uppercase font-bold text-slate-400 block">
+                            <span className="text-[11px] uppercase font-bold text-slate-500 block">
                               {item.weekday}
                             </span>
                             <span className="text-sm">
                               Dec {item.dayNumber}
                             </span>
                           </div>
-                          <div
-                            className={`w-5 h-5 rounded-md flex items-center justify-center transition ${
-                              isSelected
-                                ? 'bg-emerald-600 text-white'
-                                : 'border border-slate-300 bg-white'
-                            }`}
-                          >
+                          <div className={checkboxClass(isSelected)}>
                             {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                           </div>
                         </button>
@@ -286,18 +278,18 @@ export const VoteModal: React.FC<VoteModalProps> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-court-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition"
+              className="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-100 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-emerald-600/30 transition active:scale-95"
+              className="inline-flex items-center space-x-2 bg-ball hover:bg-ball-400 disabled:opacity-50 text-court-950 px-5 py-2.5 rounded-xl text-sm font-bold shadow-glow transition active:scale-95"
             >
               <Sparkles className="w-4 h-4" />
               <span>{isSubmitting ? 'Saving...' : editingParticipant ? 'Save Changes' : 'Submit Availability'}</span>

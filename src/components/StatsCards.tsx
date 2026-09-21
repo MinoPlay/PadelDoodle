@@ -54,58 +54,58 @@ export const StatsCards: React.FC<StatsCardsProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       {/* Card 1: Total Participants */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center space-x-4">
-        <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+      <div className="bg-court-900/80 rounded-2xl p-5 border border-court-700/60 shadow-lg shadow-black/30 flex items-center space-x-4">
+        <div className="w-12 h-12 rounded-xl bg-ball/10 text-ball border border-ball/20 flex items-center justify-center shrink-0">
           <Users className="w-6 h-6" />
         </div>
         <div>
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Players Voted</p>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Players Voted</p>
           <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold text-slate-900">{participants.length}</span>
-            <span className="text-xs text-slate-500">participants</span>
+            <span className="text-2xl font-bold text-slate-100">{participants.length}</span>
+            <span className="text-xs text-slate-500">on the court</span>
           </div>
         </div>
       </div>
 
       {/* Card 2: Leading Match Date */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center space-x-4">
-        <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+      <div className="bg-court-900/80 rounded-2xl p-5 border border-court-700/60 shadow-lg shadow-black/30 flex items-center space-x-4">
+        <div className="w-12 h-12 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 flex items-center justify-center shrink-0">
           <Trophy className="w-6 h-6" />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Leading Match Day</p>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Leading Match Day</p>
           {bestDateInfo ? (
             <div className="truncate">
-              <span className="text-base sm:text-lg font-bold text-slate-900 block truncate">
+              <span className="text-base sm:text-lg font-bold text-slate-100 block truncate">
                 {bestDateInfo.dates.map((d) => d.displayLabel).join(', ')}
               </span>
-              <p className="text-xs text-emerald-600 font-semibold">
+              <p className="text-xs text-ball font-semibold">
                 {bestDateInfo.maxVotes} {bestDateInfo.maxVotes === 1 ? 'player' : 'players'} available ({Math.round((bestDateInfo.maxVotes / participants.length) * 100)}%)
               </p>
             </div>
           ) : (
-            <p className="text-sm font-medium text-slate-400">Waiting for votes...</p>
+            <p className="text-sm font-medium text-slate-500">Waiting for the first serve...</p>
           )}
         </div>
       </div>
 
       {/* Card 3: Trust-based & Dates info */}
-      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-5 text-white shadow-sm flex items-center justify-between">
+      <div className="court-net bg-gradient-to-br from-court-700 to-court-850 rounded-2xl p-5 text-white border border-court-600/60 shadow-lg shadow-black/30 flex items-center justify-between">
         <div>
-          <div className="flex items-center space-x-1.5 text-emerald-100 text-xs font-medium mb-1">
+          <div className="flex items-center space-x-1.5 text-ball text-xs font-medium mb-1">
             <ShieldCheck className="w-4 h-4" />
             <span>Trust-Based Polling</span>
           </div>
-          <p className="text-sm font-semibold text-white">
+          <p className="text-sm font-semibold text-slate-100">
             Anyone can add or edit selections
           </p>
-          <p className="text-xs text-emerald-100 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             Pick any Friday/Saturday from Nov until Christmas.
           </p>
         </div>
         <button
           onClick={onOpenVote}
-          className="shrink-0 bg-white hover:bg-slate-100 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow"
+          className="shrink-0 bg-ball hover:bg-ball-400 text-court-950 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-glow"
         >
           Vote
         </button>
